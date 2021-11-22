@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/FTBpro/go-workshop/coolfacts/entrypoint/fact"
+	"my-go-work-shop/GoWorkShop/coolfacts/entrypoint/fact"
 )
 
 type Mentalfloss struct{}
@@ -18,15 +18,15 @@ func (mf Mentalfloss) Facts() ([]fact.Fact, error) {
 		PrimaryImage string `json:"primaryImage"`
 	}
 
-	res, err := http.Get("http://mentalfloss.com/api/facts")
+	resp, err := http.Get("http://mentalfloss.com/api/facts")
 	if err != nil {
 		fmt.Errorf(" `Error with get request! ,%v", err)
 		return nil, err
 	}
 
-	b, err := ioutil.ReadAll(res.Body)
+	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf(` Error read body respond! ,%v`, err)
+		return nil, fmt.Errorf(` Error read boby respond! ,%v`, err)
 	}
 
 	err = json.Unmarshal(b, &items)
@@ -42,6 +42,6 @@ func (mf Mentalfloss) Facts() ([]fact.Fact, error) {
 		facts = append(facts, f)
 	}
 
-	defer res.Body.Close()
+	defer resp.Body.Close()
 	return facts, nil
 }

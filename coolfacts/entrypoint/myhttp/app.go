@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/FTBpro/go-workshop/coolfacts/entrypoint/fact"
+	"my-go-work-shop/GoWorkShop/coolfacts/entrypoint/fact"
 )
 
 var newsTemplate = `<!DOCTYPE html>
@@ -26,13 +26,13 @@ var newsTemplate = `<!DOCTYPE html>
   </body>
 </html>`
 
-type FactsHandler struct {
-	FactRepo *fact.Repository
-}
-
 var req struct {
 	Image       string `json:"Image"`
 	Description string `json:"Description"`
+}
+
+type FactsHandler struct {
+	FactRepo *fact.Repository
 }
 
 func (h *FactsHandler) Ping(w http.ResponseWriter, r *http.Request) {
@@ -42,7 +42,6 @@ func (h *FactsHandler) Ping(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Add("Content-Type", "text/plain")
-
 	_, err := fmt.Fprint(w, "PONG")
 	if err != nil {
 		errMessage := fmt.Sprintf("error writing response: %v", err)
@@ -62,7 +61,6 @@ func (h *FactsHandler) Facts(w http.ResponseWriter, r *http.Request) {
 		}
 
 		allFacts := h.FactRepo.GetAll()
-
 		err = tmpl.Execute(w, allFacts)
 		if err != nil {
 			http.Error(w, `Error display content `+string(err.Error()), http.StatusInternalServerError)
@@ -70,6 +68,8 @@ func (h *FactsHandler) Facts(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case http.MethodPost:
+		// Call ParseForm() to parse the raw query and update r.PostForm and r.Form.
+		fmt.Println("got post")
 		err := r.ParseForm()
 		if err != nil {
 			http.Error(w, `Error display content `+string(err.Error()), http.StatusInternalServerError)
@@ -87,14 +87,11 @@ func (h *FactsHandler) Facts(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, `Error Unmarshel req `+string(err.Error()), http.StatusInternalServerError)
 			return
 		}
-
 		k := fact.Fact{
 			Image:       req.Image,
 			Description: req.Description,
 		}
-
 		h.FactRepo.Add(k)
-
 		w.Write([]byte("SUCCESS"))
 	default:
 	}

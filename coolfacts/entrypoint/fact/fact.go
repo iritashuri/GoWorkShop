@@ -6,13 +6,13 @@ type Fact struct {
 }
 
 type Repository struct {
-	Facts []Fact
+	facts []Fact
 }
 
 func (r *Repository) GetAll() []Fact {
-	return r.Facts
+	return r.facts
 }
 
 func (r *Repository) Add(f Fact) {
-	r.Facts = append(r.Facts, f)
+	r.facts = append(r.facts, f)
 }
