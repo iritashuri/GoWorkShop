@@ -61,16 +61,18 @@ func main() {
 		switch r.Method {
 		case http.MethodGet:
 			w.Header().Add("Content-Type", "text/html")
+
 			tmpl, err := template.New("facts").Parse(newsTemplate)
 			if err != nil {
-				http.Error(w, `Error cresting and parsing html `+ string(err.Error()), http.StatusInternalServerError)
+				http.Error(w, `Error cresting and parsing html `+string(err.Error()), http.StatusInternalServerError)
 				return
 			}
 
 			allFacts := myFacts.GetAll()
+
 			err = tmpl.Execute(w, allFacts)
 			if err != nil {
-				http.Error(w, `Error executing `+ string(err.Error()), http.StatusInternalServerError)
+				http.Error(w, `Error executing `+string(err.Error()), http.StatusInternalServerError)
 				return
 			}
 
@@ -84,6 +86,7 @@ func main() {
 				fmt.Fprintf(w, "ParseForm() err: %v", err)
 				return
 			}
+
 			b, err := ioutil.ReadAll(r.Body)
 			if err != nil {
 				fmt.Fprintf(w, "Error while reading erq body - %v", err)
@@ -95,6 +98,7 @@ func main() {
 				http.Error(w, `Error Unmarshel req `+string(err.Error()), http.StatusInternalServerError)
 				return
 			}
+
 			k := fact.Fact{
 				Image:       req.Image,
 				Description: req.Description,
