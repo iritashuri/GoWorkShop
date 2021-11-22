@@ -9,6 +9,7 @@ require (
 	github.com/FTBpro/go-workshop/coolfacts/exercise6 v0.0.0
 	github.com/FTBpro/go-workshop/coolfacts/exercise7 v0.0.0
 	github.com/FTBpro/go-workshop/coolfacts/exercise8 v0.0.0
+	golang.org/x/tools v0.1.7 // indirect
 )
 
 replace github.com/FTBpro/go-workshop/coolfacts/exercise1 => ./exercise1

@@ -1,7 +1,7 @@
 package fact
 
 type Fact struct {
-	Image string
+	Image       string
 	Description string
 }
 

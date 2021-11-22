@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/FTBpro/go-workshop/coolfacts/entrypoint/fact"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/FTBpro/go-workshop/coolfacts/entrypoint/fact"
 )
 
 var newsTemplate = `<!DOCTYPE html>
