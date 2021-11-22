@@ -28,33 +28,26 @@ var newsTemplate = `<!DOCTYPE html>
 </html>`
 
 func main() {
+	myFacts := fact.Repository{
+		Facts: []fact.Fact{},
+	}
+
+	mentalfloss := Mentalfloss{}
+	facts, err := mentalfloss.Facts()
+	if err != nil {
+		fmt.Sprintf(`Error reading content %v `, err)
+	}
+
+	for _, fact := range facts {
+		myFacts.Add(fact)
+	}
+
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		_, err := fmt.Fprintf(w, "PONG\n")
 		if err != nil {
 			http.Error(w, "Error", http.StatusInternalServerError)
 		}
 	})
-
-	myFacts := fact.Repository{
-		Facts: []fact.Fact{
-			{
-				Image:       "onePic",
-				Description: "oneDes",
-			},
-			{
-				Image:       "twoPic",
-				Description: "twoDes",
-			},
-			{
-				Image:       "thirdPic",
-				Description: "thirdDes",
-			},
-			{
-				Image:       "foursPic",
-				Description: "foursDes",
-			},
-		},
-	}
 
 	http.HandleFunc("/facts", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "text/html")
@@ -69,9 +62,7 @@ func main() {
 				return
 			}
 
-			allFacts := myFacts.GetAll()
-
-			err = tmpl.Execute(w, allFacts)
+			err = tmpl.Execute(w, facts)
 			if err != nil {
 				http.Error(w, `Error executing `+string(err.Error()), http.StatusInternalServerError)
 				return
