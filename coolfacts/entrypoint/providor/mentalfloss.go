@@ -1,4 +1,4 @@
-package mentalfloss
+package providor
 
 import (
 	"encoding/json"
@@ -9,24 +9,28 @@ import (
 	"my-go-work-shop/GoWorkShop/coolfacts/entrypoint/fact"
 )
 
-type Mentalfloss struct{}
+type Provider struct{}
 
-func (mf Mentalfloss) Facts() ([]fact.Fact, error) {
+func NewProvider() *Provider {
+	return &Provider{}
+}
+
+func (p Provider) Facts() ([]fact.Fact, error) {
 	var facts []fact.Fact
 	var items []struct {
 		FactText     string `json:"fact"`
 		PrimaryImage string `json:"primaryImage"`
 	}
 
-	resp, err := http.Get("http://mentalfloss.com/api/facts")
+	res, err := http.Get("http://mentalfloss.com/api/facts")
 	if err != nil {
 		fmt.Errorf(" `Error with get request! ,%v", err)
 		return nil, err
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, fmt.Errorf(` Error read boby respond! ,%v`, err)
+		return nil, fmt.Errorf( ` Error read boby respond! ,%v`, err)
 	}
 
 	err = json.Unmarshal(b, &items)
@@ -34,14 +38,15 @@ func (mf Mentalfloss) Facts() ([]fact.Fact, error) {
 		return nil, fmt.Errorf(` Error unmarshel ,%v`, err)
 	}
 
-	for _, v := range items {
+	for _,v := range items{
 		f := fact.Fact{
-			Image:       v.PrimaryImage,
+			Image: v.PrimaryImage,
 			Description: v.FactText,
 		}
 		facts = append(facts, f)
 	}
 
-	defer resp.Body.Close()
+	defer res.Body.Close()
 	return facts, nil
 }
+

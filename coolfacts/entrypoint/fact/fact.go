@@ -1,18 +1,48 @@
 package fact
 
+import (
+	"fmt"
+)
+
 type Fact struct {
 	Image       string
 	Description string
 }
 
-type Repository struct {
-	facts []Fact
+type Provider interface {
+	Facts() ([]Fact, error)
 }
 
-func (r *Repository) GetAll() []Fact {
-	return r.facts
+type Repository interface {
+	Add(f Fact)
+	GetAll() []Fact
+	//init() []Fact
 }
 
-func (r *Repository) Add(f Fact) {
-	r.facts = append(r.facts, f)
+type service struct {
+	provider Provider
+	repository    Repository
 }
+
+// should I delete all?
+func (s *service) UpdateFacts() func() error {
+	return func() error {
+		facts, err := s.provider.Facts()
+		if err != nil {
+			return fmt.Errorf(`Error reading content %v `, err)
+		}
+
+		for _, fact := range facts {
+			s.repository.Add(fact)
+		}
+		return nil
+	}
+}
+
+func NewService(r Repository, p Provider) *service {
+	return &service{
+		provider:   p,
+		repository: r,
+	}
+}
+

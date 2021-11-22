@@ -8,21 +8,21 @@ import (
 	"time"
 
 	"my-go-work-shop/GoWorkShop/coolfacts/entrypoint/fact"
-	"my-go-work-shop/GoWorkShop/coolfacts/entrypoint/mentalfloss"
+	"my-go-work-shop/GoWorkShop/coolfacts/entrypoint/inmem"
 	"my-go-work-shop/GoWorkShop/coolfacts/entrypoint/myhttp"
+	"my-go-work-shop/GoWorkShop/coolfacts/entrypoint/providor"
 )
 
 func main() {
-	factsRepo := fact.Repository{}
-	handlerer := myhttp.FactsHandler{
-		FactRepo: &factsRepo,
-	}
+	factsRepo := inmem.NewFactRepository()
 
-	mentalFloss := mentalfloss.Mentalfloss{}
+	handlerer := myhttp.NewFactsHandler(factsRepo)
 
-	updateFunc(mentalFloss, &factsRepo)
+	provider := providor.NewProvider()
+	service := fact.NewService(factsRepo,provider)
 
-	updater := updateFunc(mentalFloss, &factsRepo)
+
+	updater := service.UpdateFacts()
 	if err := updater(); err != nil {
 		log.Printf(`errror in updateFunc: %v`, err)
 	}
@@ -56,16 +56,3 @@ func updateFactsWithTicker(ctx context.Context, updateFunc func() error) {
 	}(ctx)
 }
 
-func updateFunc(mentalFloss mentalfloss.Mentalfloss, repo *fact.Repository) func() error {
-	return func() error {
-		facts, err := mentalFloss.Facts()
-		if err != nil {
-			return fmt.Errorf(`Error reading content %v `, err)
-		}
-
-		for _, fact := range facts {
-			repo.Add(fact)
-		}
-		return nil
-	}
-}

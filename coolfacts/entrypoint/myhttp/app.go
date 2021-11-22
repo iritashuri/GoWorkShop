@@ -32,8 +32,20 @@ var req struct {
 }
 
 type FactsHandler struct {
-	FactRepo *fact.Repository
+	FactRepo FactRepository
 }
+
+type FactRepository interface {
+	Add(f fact.Fact)
+	GetAll() []fact.Fact
+}
+
+func NewFactsHandler(factRepo FactRepository) *FactsHandler {
+	return &FactsHandler{
+		FactRepo: factRepo,
+	}
+}
+
 
 func (h *FactsHandler) Ping(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -50,22 +62,17 @@ func (h *FactsHandler) Ping(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FactsHandler) Facts(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Content-Type", "text/html")
-
 	switch r.Method {
 	case http.MethodGet:
+		w.Header().Add("Content-Type", "text/html")
 		tmpl, err := template.New("facts").Parse(newsTemplate)
 		if err != nil {
-			http.Error(w, `Error cresting and parsing html `+string(err.Error()), http.StatusInternalServerError)
+			http.Error(w, `Error cresting and parsing html `+ string(err.Error()), http.StatusInternalServerError)
 			return
 		}
 
 		allFacts := h.FactRepo.GetAll()
-		err = tmpl.Execute(w, allFacts)
-		if err != nil {
-			http.Error(w, `Error display content `+string(err.Error()), http.StatusInternalServerError)
-			return
-		}
+		tmpl.Execute(w, allFacts)
 
 	case http.MethodPost:
 		// Call ParseForm() to parse the raw query and update r.PostForm and r.Form.
