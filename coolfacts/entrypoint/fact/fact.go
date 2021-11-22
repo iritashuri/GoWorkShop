@@ -13,6 +13,6 @@ func (r *Repository) GetAll() []Fact {
 	return r.Facts
 }
 
-func (r *Repository) add(f Fact) {
+func (r *Repository) Add(f Fact) {
 	r.Facts = append(r.Facts, f)
 }
