@@ -1,18 +1,43 @@
 package fact
 
+import "fmt"
+
 type Fact struct {
-	Image string
+	ID          string
+	Image       string
 	Description string
 }
 
-type Repository struct {
-	Facts []Fact
+type Provider interface {
+	Facts() (map[string]Fact, error)
 }
 
-func (r *Repository) GetAll() []Fact {
-	return r.Facts
+type Repository interface {
+	Add(f Fact)
+	GetAll() []Fact
+}
+type service struct {
+	provider   Provider
+	repository Repository
 }
 
-func (r *Repository) Add(f Fact) {
-	r.Facts = append(r.Facts, f)
+func (s *service) UpdateFacts() func() error {
+	return func() error {
+		facts, err := s.provider.Facts()
+		if err != nil {
+			return fmt.Errorf(`Error reading content %v `, err)
+		}
+
+		for _, fact := range facts {
+			s.repository.Add(fact)
+		}
+		return nil
+	}
+}
+
+func NewService(r Repository, p Provider) *service {
+	return &service{
+		provider:   p,
+		repository: r,
+	}
 }

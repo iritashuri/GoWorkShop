@@ -1,113 +1,56 @@
 package main
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
-	"github.com/FTBpro/go-workshop/coolfacts/entrypoint/fact"
-	"html/template"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
+
+	"my-go-work-shop/GoWorkShop/coolfacts/entrypoint/fact"
+	"my-go-work-shop/GoWorkShop/coolfacts/entrypoint/inmem"
+	"my-go-work-shop/GoWorkShop/coolfacts/entrypoint/myhttp"
+	"my-go-work-shop/GoWorkShop/coolfacts/entrypoint/providor"
 )
 
-var newsTemplate = `<!DOCTYPE html>
-<html>
-  <head><style>/* copy coolfacts/styles.css for some color 🎨*/</style></head>
-  <body>
-  <h1>Facts List</h1>
-  <div>
-    {{ range . }}
-       <article>
-            <h3>{{.Description}}</h3>
-            <img src="{{.Image}}" width="30%" />
-       </article>
-    {{ end }}
-  <div>
-  </body>
-</html>`
-
 func main() {
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		_, err := fmt.Fprintf(w, "PONG\n")
-		if err != nil {
-			http.Error(w, "Error", http.StatusInternalServerError)
-		}
-	})
+	factsRepo := inmem.NewFactRepository()
 
-	myFacts := fact.Repository{
-		Facts: []fact.Fact{
-			{
-				Image:       "onePic",
-				Description: "oneDes",
-			},
-			{
-				Image:       "twoPic",
-				Description: "twoDes",
-			},
-			{
-				Image:       "thirdPic",
-				Description: "thirdDes",
-			},
-			{
-				Image:       "foursPic",
-				Description: "foursDes",
-			},
-		},
+	handlerer := myhttp.NewFactsHandler(factsRepo)
+
+	provider := providor.NewProvider()
+	service := fact.NewService(factsRepo, provider)
+
+	updater := service.UpdateFacts()
+	if err := updater(); err != nil {
+		log.Printf(`errror in updateFunc: %v`, err)
 	}
 
-	http.HandleFunc("/facts", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Content-Type", "text/html")
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	defer cancelFunc()
 
-		switch r.Method {
-		case http.MethodGet:
-			w.Header().Add("Content-Type", "text/html")
+	updateFactsWithTicker(ctx, updater)
 
-			tmpl, err := template.New("facts").Parse(newsTemplate)
-			if err != nil {
-				http.Error(w, `Error cresting and parsing html `+string(err.Error()), http.StatusInternalServerError)
-				return
-			}
-
-			allFacts := myFacts.GetAll()
-
-			err = tmpl.Execute(w, allFacts)
-			if err != nil {
-				http.Error(w, `Error executing `+string(err.Error()), http.StatusInternalServerError)
-				return
-			}
-
-		case http.MethodPost:
-			var req struct {
-				Image       string `json:"image"`
-				Description string `json:"description"`
-			}
-
-			if err := r.ParseForm(); err != nil {
-				fmt.Fprintf(w, "ParseForm() err: %v", err)
-				return
-			}
-
-			b, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				fmt.Fprintf(w, "Error while reading erq body - %v", err)
-				return
-			}
-
-			err = json.Unmarshal(b, &req)
-			if err != nil {
-				http.Error(w, `Error Unmarshel req `+string(err.Error()), http.StatusInternalServerError)
-				return
-			}
-
-			k := fact.Fact{
-				Image:       req.Image,
-				Description: req.Description,
-			}
-			myFacts.Add(k)
-			w.Write([]byte("SUCCESS"))
-
-		default:
-		}
-	})
+	http.HandleFunc("/ping", handlerer.Ping)
+	http.HandleFunc("/facts", handlerer.Facts)
 	log.Fatal(http.ListenAndServe(":9002", nil))
+}
+
+func updateFactsWithTicker(ctx context.Context, updateFunc func() error) {
+	ticker := time.NewTicker(3 * time.Second)
+
+	go func(ctx context.Context) {
+		for {
+			select {
+			case <-ticker.C:
+				fmt.Println("updating")
+				if err := updateFunc(); err != nil {
+					log.Printf(`errror in updateFunc: %v`, err)
+					return
+				}
+			case <-ctx.Done():
+				return
+			}
+		}
+	}(ctx)
 }
