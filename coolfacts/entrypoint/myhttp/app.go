@@ -46,7 +46,6 @@ func NewFactsHandler(factRepo FactRepository) *FactsHandler {
 	}
 }
 
-
 func (h *FactsHandler) Ping(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "no myhttp handler found", http.StatusNotFound)
@@ -75,7 +74,6 @@ func (h *FactsHandler) Facts(w http.ResponseWriter, r *http.Request) {
 		tmpl.Execute(w, allFacts)
 
 	case http.MethodPost:
-		// Call ParseForm() to parse the raw query and update r.PostForm and r.Form.
 		fmt.Println("got post")
 		err := r.ParseForm()
 		if err != nil {

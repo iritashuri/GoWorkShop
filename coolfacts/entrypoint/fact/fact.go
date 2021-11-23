@@ -5,26 +5,25 @@ import (
 )
 
 type Fact struct {
+	ID          string
 	Image       string
 	Description string
 }
 
 type Provider interface {
-	Facts() ([]Fact, error)
+	Facts() (map[string]Fact, error)
 }
 
 type Repository interface {
 	Add(f Fact)
-	GetAll() []Fact
-	//init() []Fact
+	GetAll() map[string]Fact
 }
 
 type service struct {
-	provider Provider
-	repository    Repository
+	provider   Provider
+	repository Repository
 }
 
-// should I delete all?
 func (s *service) UpdateFacts() func() error {
 	return func() error {
 		facts, err := s.provider.Facts()
@@ -45,4 +44,3 @@ func NewService(r Repository, p Provider) *service {
 		repository: r,
 	}
 }
-
