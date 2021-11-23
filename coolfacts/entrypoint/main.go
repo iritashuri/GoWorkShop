@@ -4,10 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/FTBpro/go-workshop/coolfacts/entrypoint/fact"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
+
+var newsTemplate = `<!DOCTYPE html>
+<html>
+  <head><style>/* copy coolfacts/styles.css for some color 🎨*/</style></head>
+  <body>
+  <h1>Facts List</h1>
+  <div>
+    {{ range . }}
+       <article>
+            <h3>{{.Description}}</h3>
+            <img src="{{.Image}}" width="30%" />
+       </article>
+    {{ end }}
+  <div>
+  </body>
+</html>`
 
 func main() {
 	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
@@ -39,21 +56,27 @@ func main() {
 	}
 
 	http.HandleFunc("/facts", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Content-Type", "text/html")
 
 		switch r.Method {
-		case "GET":
-			allFacts := myFacts.GetAll()
-			str, err := json.Marshal(allFacts)
+		case http.MethodGet:
+			w.Header().Add("Content-Type", "text/html")
+
+			tmpl, err := template.New("facts").Parse(newsTemplate)
 			if err != nil {
-				fmt.Errorf(" `Error! ,%v", err)
+				http.Error(w, `Error cresting and parsing html `+string(err.Error()), http.StatusInternalServerError)
+				return
 			}
 
-			_, err = fmt.Fprint(w, string(str))
+			allFacts := myFacts.GetAll()
+
+			err = tmpl.Execute(w, allFacts)
 			if err != nil {
-				http.Error(w, "Error", http.StatusInternalServerError)
+				http.Error(w, `Error executing `+string(err.Error()), http.StatusInternalServerError)
+				return
 			}
-		case "POST":
+
+		case http.MethodPost:
 			var req struct {
 				Image       string `json:"image"`
 				Description string `json:"description"`
@@ -63,6 +86,7 @@ func main() {
 				fmt.Fprintf(w, "ParseForm() err: %v", err)
 				return
 			}
+
 			b, err := ioutil.ReadAll(r.Body)
 			if err != nil {
 				fmt.Fprintf(w, "Error while reading erq body - %v", err)
@@ -74,6 +98,7 @@ func main() {
 				http.Error(w, `Error Unmarshel req `+string(err.Error()), http.StatusInternalServerError)
 				return
 			}
+
 			k := fact.Fact{
 				Image:       req.Image,
 				Description: req.Description,
