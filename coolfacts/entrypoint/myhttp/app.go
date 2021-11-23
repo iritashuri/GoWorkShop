@@ -48,17 +48,7 @@ func NewFactsHandler(factRepo FactRepository) *FactsHandler {
 }
 
 func (h *FactsHandler) Ping(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "no myhttp handler found", http.StatusNotFound)
-		return
-	}
-
-	w.Header().Add("Content-Type", "text/plain")
-	_, err := fmt.Fprint(w, "PONG")
-	if err != nil {
-		errMessage := fmt.Sprintf("error writing response: %v", err)
-		http.Error(w, errMessage, http.StatusInternalServerError)
-	}
+	showPong(w, r)
 }
 
 func (h *FactsHandler) Facts(w http.ResponseWriter, r *http.Request) {
@@ -109,4 +99,18 @@ func showFacts(h *FactsHandler, w http.ResponseWriter) {
 
 	allFacts := h.FactRepo.GetAll()
 	tmpl.Execute(w, allFacts)
+}
+
+func showPong(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "no myhttp handler found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Add("Content-Type", "text/plain")
+	_, err := fmt.Fprint(w, "PONG")
+	if err != nil {
+		errMessage := fmt.Sprintf("error writing response: %v", err)
+		http.Error(w, errMessage, http.StatusInternalServerError)
+	}
 }
