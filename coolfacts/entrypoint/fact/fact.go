@@ -1,8 +1,6 @@
 package fact
 
-import (
-	"fmt"
-)
+import "fmt"
 
 type Fact struct {
 	ID          string
@@ -18,7 +16,6 @@ type Repository interface {
 	Add(f Fact)
 	GetAll() map[string]Fact
 }
-
 type service struct {
 	provider   Provider
 	repository Repository

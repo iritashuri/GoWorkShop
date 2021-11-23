@@ -19,8 +19,7 @@ func main() {
 	handlerer := myhttp.NewFactsHandler(factsRepo)
 
 	provider := providor.NewProvider()
-	service := fact.NewService(factsRepo,provider)
-
+	service := fact.NewService(factsRepo, provider)
 
 	updater := service.UpdateFacts()
 	if err := updater(); err != nil {
@@ -55,4 +54,3 @@ func updateFactsWithTicker(ctx context.Context, updateFunc func() error) {
 		}
 	}(ctx)
 }
-
