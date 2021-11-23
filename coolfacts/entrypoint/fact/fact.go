@@ -1,8 +1,6 @@
 package fact
 
-import (
-	"fmt"
-)
+import "fmt"
 
 type Fact struct {
 	Image       string
@@ -16,7 +14,6 @@ type Provider interface {
 type Repository interface {
 	Add(f Fact)
 	GetAll() []Fact
-	//init() []Fact
 }
 
 type service struct {
@@ -24,7 +21,6 @@ type service struct {
 	repository    Repository
 }
 
-// should I delete all?
 func (s *service) UpdateFacts() func() error {
 	return func() error {
 		facts, err := s.provider.Facts()

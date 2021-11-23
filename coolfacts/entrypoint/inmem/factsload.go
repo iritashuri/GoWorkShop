@@ -17,9 +17,3 @@ func (r *factRepository) Add(f fact.Fact) {
 func (r *factRepository) GetAll() []fact.Fact {
 	return r.facts
 }
-
-//
-//func (r *factRepository) init() []fact.Fact {
-//	return []fact.Fact{}
-//}
-

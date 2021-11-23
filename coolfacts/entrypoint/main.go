@@ -21,7 +21,6 @@ func main() {
 	provider := providor.NewProvider()
 	service := fact.NewService(factsRepo,provider)
 
-
 	updater := service.UpdateFacts()
 	if err := updater(); err != nil {
 		log.Printf(`errror in updateFunc: %v`, err)
