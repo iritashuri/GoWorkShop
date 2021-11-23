@@ -7,13 +7,17 @@ type factRepository struct {
 }
 
 func NewFactRepository() *factRepository {
-	return &factRepository{}
+	return &factRepository{map[string]fact.Fact{}}
 }
 
 func (r *factRepository) Add(f fact.Fact) {
 	r.facts[f.ID] = f
 }
 
-func (r *factRepository) GetAll() map[string]fact.Fact {
-	return r.facts
+func (r *factRepository) GetAll() []fact.Fact {
+	var facts []fact.Fact
+	for  _, v := range r.facts{
+		facts = append(facts, v)
+	}
+	return facts
 }

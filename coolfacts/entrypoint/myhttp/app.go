@@ -27,6 +27,7 @@ var newsTemplate = `<!DOCTYPE html>
 </html>`
 
 var req struct {
+	Id          string `json:"id"`
 	Image       string `json:"Image"`
 	Description string `json:"Description"`
 }
@@ -71,7 +72,7 @@ func (h *FactsHandler) Facts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func postFacts(h *FactsHandler, w http.ResponseWriter, r *http.Request)  {
+func postFacts(h *FactsHandler, w http.ResponseWriter, r *http.Request) {
 	fmt.Println("got post")
 	err := r.ParseForm()
 	if err != nil {
@@ -102,7 +103,7 @@ func showFacts(h *FactsHandler, w http.ResponseWriter) {
 	w.Header().Add("Content-Type", "text/html")
 	tmpl, err := template.New("facts").Parse(newsTemplate)
 	if err != nil {
-		http.Error(w, `Error cresting and parsing html `+ string(err.Error()), http.StatusInternalServerError)
+		http.Error(w, `Error cresting and parsing html `+string(err.Error()), http.StatusInternalServerError)
 		return
 	}
 

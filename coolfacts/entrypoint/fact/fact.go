@@ -14,7 +14,7 @@ type Provider interface {
 
 type Repository interface {
 	Add(f Fact)
-	GetAll() map[string]Fact
+	GetAll() []Fact
 }
 type service struct {
 	provider   Provider

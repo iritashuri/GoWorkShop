@@ -15,9 +15,10 @@ func NewProvider() *Provider {
 	return &Provider{}
 }
 
-func (p Provider) Facts() ([]fact.Fact, error) {
-	var facts []fact.Fact
+func (p Provider) Facts() (map[string]fact.Fact, error) {
+	facts := make(map[string]fact.Fact)
 	var items []struct {
+		ID           string `json:"id"`
 		FactText     string `json:"fact"`
 		PrimaryImage string `json:"primaryImage"`
 	}
@@ -30,7 +31,7 @@ func (p Provider) Facts() ([]fact.Fact, error) {
 
 	b, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, fmt.Errorf( ` Error read boby respond! ,%v`, err)
+		return nil, fmt.Errorf(` Error read boby respond! ,%v`, err)
 	}
 
 	err = json.Unmarshal(b, &items)
@@ -38,15 +39,15 @@ func (p Provider) Facts() ([]fact.Fact, error) {
 		return nil, fmt.Errorf(` Error unmarshel ,%v`, err)
 	}
 
-	for _,v := range items{
+	for _, v := range items {
 		f := fact.Fact{
-			Image: v.PrimaryImage,
+			ID:          v.ID,
+			Image:       v.PrimaryImage,
 			Description: v.FactText,
 		}
-		facts = append(facts, f)
+		facts[f.ID] = f
 	}
 
 	defer res.Body.Close()
 	return facts, nil
 }
-
